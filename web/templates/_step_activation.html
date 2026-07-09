@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Activar · zf-vision{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Activá tu agente</h1>
+  <p class="muted">Pegá el código que te dio el administrador. Lo generamos una sola vez, así que no lo pierdas.</p>
+
+  {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" action="/activation" class="form">
+    <label>
+      <span>Código de activación</span>
+      <input type="text" name="code" placeholder="ABCD-1234-EFGH"
+             autocomplete="off" autocapitalize="characters" spellcheck="false"
+             required minlength="4" maxlength="64" value="{{ code|default('') }}">
+    </label>
+    <button type="submit" class="btn btn-primary">Activar</button>
+  </form>
+</section>
+{% endblock %}

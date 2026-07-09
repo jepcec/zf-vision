@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}zf-vision · Agente local{% endblock %}</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">ZF</span>
+      <span class="name">zf-vision</span>
+    </div>
+    <nav class="steps" aria-label="Pasos de configuración">
+      {% set step = current_step|default('activation') %}
+      <span class="step {{ 'active' if step == 'activation' else ('done' if step != 'activation') }}">1. Activar</span>
+      <span class="step {{ 'active' if step == 'camera' else ('done' if step in ('roi', 'done') else '') }}">2. Cámara</span>
+      <span class="step {{ 'active' if step == 'roi' else ('done' if step == 'done' else '') }}">3. ROI</span>
+      <span class="step {{ 'active' if step == 'done' else '' }}">4. Listo</span>
+    </nav>
+    <a href="/preview" class="topbar-link" title="Ver preview en vivo con ROI">↗ Preview</a>
+    <a href="/log" class="topbar-link" title="Ver registro de pushes">↗ Log</a>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <small>zf-vision · agente local · {{ mock_label }}</small>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

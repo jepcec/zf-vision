@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Elegí cámara · zf-vision{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Elegí la cámara</h1>
+  <p class="muted">Detectamos las cámaras USB conectadas. Si tu cámara es IP, pegá la URL RTSP.</p>
+
+  {% if entity_name %}
+    <div class="alert alert-info">Activado como <strong>{{ entity_name }}</strong>.</div>
+  {% endif %}
+
+  {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+  {% endif %}
+
+  <h2 class="section-title">Cámaras USB detectadas</h2>
+  {% if usb_cameras %}
+    <ul class="cam-list">
+      {% for cam in usb_cameras %}
+        <li class="cam-item">
+          <div>
+            <strong>USB {{ cam.index }}</strong>
+            <span class="muted"> · {{ cam.width }}×{{ cam.height }} · {{ '%.0f' % cam.fps }} fps</span>
+          </div>
+          <form method="post" action="/cameras">
+            <input type="hidden" name="kind" value="usb">
+            <input type="hidden" name="index" value="{{ cam.index }}">
+            <button type="submit" class="btn btn-secondary">Usar esta</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No detectamos ninguna cámara USB. Probá con una IP RTSP.</p>
+  {% endif %}
+
+  <h2 class="section-title">Cámara IP (RTSP)</h2>
+  <form method="post" action="/cameras" class="form">
+    <input type="hidden" name="kind" value="rtsp">
+    <label>
+      <span>URL RTSP</span>
+      <input type="text" name="source_uri" placeholder="rtsp://usuario:contraseña@host:puerto/stream"
+             autocomplete="off" spellcheck="false"
+             value="{{ source_uri|default('') }}" required>
+    </label>
+    <button type="submit" class="btn btn-primary">Probar conexión</button>
+  </form>
+</section>
+{% endblock %}

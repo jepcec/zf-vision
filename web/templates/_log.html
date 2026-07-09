@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Log de pushes · zf-vision{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="log-header">
+    <h1>Registro de pushes</h1>
+    <div class="log-actions">
+      <span id="status" class="muted small">Conectando…</span>
+      <button type="button" id="btn-clear" class="btn btn-ghost">✕ Limpiar</button>
+    </div>
+  </div>
+  <p class="muted">
+    Eventos en tiempo real de la comunicación con el backend. Modo: <strong>{{ mock_label }}</strong>.
+    Se actualiza cada 1 segundo.
+  </p>
+
+  <div class="log-summary" id="summary">
+    <span>Total: <strong id="cnt-total">0</strong></span>
+    <span>Activate: <strong id="cnt-activate">0</strong></span>
+    <span>Heartbeats: <strong id="cnt-heartbeat">0</strong></span>
+    <span>Métricas: <strong id="cnt-metrics">0</strong></span>
+    <span>Comandos: <strong id="cnt-commands">0</strong></span>
+    <span>Errores: <strong id="cnt-errors">0</strong></span>
+  </div>
+
+  <table class="log-table">
+    <thead>
+      <tr>
+        <th>Hora</th>
+        <th>Método</th>
+        <th>Path</th>
+        <th>Status</th>
+        <th>ms</th>
+        <th>Modo</th>
+        <th>Body</th>
+      </tr>
+    </thead>
+    <tbody id="events-body">
+      <tr class="empty"><td colspan="7" class="muted">Sin eventos aún. Activá el agente o esperá el próximo push.</td></tr>
+    </tbody>
+  </table>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/log.js"></script>
+{% endblock %}

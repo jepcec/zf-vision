@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Configurar ROI · zf-vision{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Dibujá la zona de la cola</h1>
+  <p class="muted">
+    Clic para agregar puntos. Doble clic para cerrar el polígono. Arrastrá un vértice para moverlo.
+  </p>
+
+  {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+  {% endif %}
+
+  <div class="roi-stage">
+    <img id="preview" src="/cameras/preview" alt="Preview de la cámara">
+    <canvas id="roi" width="640" height="360"></canvas>
+  </div>
+
+  <div class="roi-side">
+    <h2 class="section-title">Polígonos</h2>
+    <ul id="poly-list" class="poly-list">
+      <li class="muted" id="poly-empty">Aún no hay polígonos.</li>
+    </ul>
+    <div class="roi-actions">
+      <button type="button" id="btn-undo" class="btn btn-ghost">↶ Deshacer último</button>
+      <button type="button" id="btn-finish" class="btn btn-secondary" disabled>✓ Cerrar polígono actual</button>
+      <button type="button" id="btn-clear" class="btn btn-ghost">✕ Borrar todo</button>
+    </div>
+    <form method="post" action="/roi" id="roi-form">
+      <input type="hidden" name="polygons" id="polygons-input">
+      <button type="submit" class="btn btn-primary" id="btn-save" disabled>Guardar ROI</button>
+    </form>
+    <p class="muted small">
+      Hacé clic para agregar puntos. Acerca el cursor al primer punto para cerrarlo
+      (o doble clic / Enter). <kbd>Esc</kbd> cancela el polígono en curso.
+    </p>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/roi.js"></script>
+{% endblock %}

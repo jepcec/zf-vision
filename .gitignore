@@ -1,0 +1,93 @@
+# ── Entornos virtuales ───────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ── Python: bytecode y compilación ───────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ── Empaquetado (setuptools / pip / wheel) ───────────────────
+*.egg
+*.egg-info/
+dist/
+build/
+develop-eggs/
+downloads/
+eggs/
+parts/
+sdist/
+wheels/
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ── Tests y coverage ────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.cover
+.cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+nosetests.xml
+
+# ── Secretos y configuración local ──────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+.zf-vision/
+config_local/
+*.local.yaml
+
+# ── Logs y datos de runtime ──────────────────────────────────
+*.log
+logs/
+pids/
+*.pid
+*.sqlite
+*.sqlite3
+*.db
+zf-vision.log
+
+# ── Uvicorn ──────────────────────────────────────────────────
+uvicorn.pid
+.uvicorn/
+
+# ── Modelos ML / visión (binarios grandes) ──────────────────
+models/*.onnx
+models/*.pt
+models/*.pth
+models/*.h5
+models/*.tflite
+data/
+datasets/
+*.npz
+*.npy
+
+# ── IDEs ─────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+*.temp
+*.orig
+
+# ── Sistema operativo ────────────────────────────────────────
+.DS_Store
+Thumbs.db

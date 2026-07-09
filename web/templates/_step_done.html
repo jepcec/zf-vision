@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Listo · zf-vision{% endblock %}
+{% block content %}
+<section class="card success">
+  <h1>Agente configurado ✓</h1>
+  <p class="muted">El agente quedó vinculado y con la cámara y ROI configurados.</p>
+
+  <dl class="summary">
+    <dt>Entidad</dt>
+    <dd>{{ activation.entity_name|default('—') }}</dd>
+
+    <dt>Cámara</dt>
+    <dd>
+      {% if camera and camera.kind == 'usb' %}
+        USB {{ camera.index }}
+      {% elif camera and camera.kind == 'rtsp' %}
+        {{ camera.source_uri }}
+      {% else %}—{% endif %}
+    </dd>
+
+    <dt>ROI</dt>
+    <dd>
+      {% set polys = (roi.polygons if roi else []) or [] %}
+      {{ polys|length }} polígono{{ '' if polys|length == 1 else 's' }}
+    </dd>
+
+    <dt>API key</dt>
+    <dd><code>{{ activation.api_key[:12] }}…</code></dd>
+  </dl>
+
+  <form method="post" action="/reset" class="form"
+        onsubmit="return confirm('¿Borrar toda la configuración y volver a empezar?')">
+    <button type="submit" class="btn btn-ghost">↺ Volver a configurar</button>
+  </form>
+
+  <p class="muted small">
+    Próximamente: el agente empezará a contar personas y enviar las métricas al backend.
+  </p>
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Preview · zf-vision{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="log-header">
+    <h1>Vista en vivo</h1>
+    <span id="status" class="small log-status log-status-ok">● Pipeline activo</span>
+  </div>
+  <p class="muted">Stream de la cámara con el ROI dibujado. Contadores en vivo, polling cada 1s.</p>
+
+  <div class="preview-stage">
+    <img id="preview" src="/cameras/preview" alt="Cámara">
+    <canvas id="overlay"></canvas>
+  </div>
+
+  <div class="log-summary" id="stats">
+    <span>Personas: <strong id="stat-people">—</strong></span>
+    <span>Estado: <strong id="stat-status">—</strong></span>
+    <span>FPS: <strong id="stat-fps">—</strong></span>
+    <span>Infer: <strong id="stat-infer">—</strong></span>
+    <span>Modelo: <strong id="stat-model">—</strong></span>
+    <span>Polígonos: <strong id="stat-polys">—</strong></span>
+  </div>
+
+  <p class="muted small">
+    <span id="diag">Conectando…</span>
+  </p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.__INITIAL_ROI__ = {{ roi|tojson }};
+</script>
+<script src="/static/preview.js"></script>
+{% endblock %}

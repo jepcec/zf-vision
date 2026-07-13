@@ -46,6 +46,7 @@ cp .env.example .env
 
 ```bash
 uvicorn app.main:app --host 127.0.0.1 --port 8765
+fastapi dev --port 8765
 ```
 
 Abrí `http://127.0.0.1:8765/` en el navegador. Vas a ver el wizard de 3 pasos:

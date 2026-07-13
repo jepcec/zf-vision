@@ -2,17 +2,15 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from datetime import datetime, timezone
 
 from app.backend_client import BackendClient
+from app.config import get_settings
 from app.local_store import load_config
 from app.vision.pipeline import QueuePipeline
 
 log = logging.getLogger(__name__)
-
-METRIC_INTERVAL_S = 30
-HEARTBEAT_INTERVAL_S = 60
-COMMANDS_INTERVAL_S = 120
 
 
 class PushScheduler:
@@ -20,12 +18,17 @@ class PushScheduler:
         self.client = client
         self.pipeline = pipeline
         self._stop = asyncio.Event()
-        self._tasks: list[asyncio.Task] = []
+        self._task: asyncio.Task | None = None
         self._running = False
+        self._interval = get_settings().PUSH_INTERVAL_S
 
     @property
     def running(self) -> bool:
         return self._running
+
+    @property
+    def interval_s(self) -> int:
+        return self._interval
 
     async def start(self) -> None:
         cfg = load_config()
@@ -36,68 +39,71 @@ class PushScheduler:
             return
         self._stop.clear()
         self.pipeline.start()
-        self._tasks = [
-            asyncio.create_task(self._metric_loop(), name="zf-metric"),
-            asyncio.create_task(self._heartbeat_loop(), name="zf-heartbeat"),
-            asyncio.create_task(self._commands_loop(), name="zf-commands"),
-        ]
+        self._task = asyncio.create_task(self._loop(), name="zf-tick")
         self._running = True
-        log.info(
-            "scheduler: iniciado (metric=%ds, heartbeat=%ds, commands=%ds)",
-            METRIC_INTERVAL_S, HEARTBEAT_INTERVAL_S, COMMANDS_INTERVAL_S,
-        )
+        log.info("scheduler: iniciado (intervalo único=%ds)", self._interval)
 
     async def stop(self) -> None:
         if not self._running:
             return
         self._running = False
         self._stop.set()
-        for t in self._tasks:
-            t.cancel()
-        try:
-            await asyncio.wait_for(
-                asyncio.gather(*self._tasks, return_exceptions=True),
-                timeout=2.0,
-            )
-        except asyncio.TimeoutError:
-            log.warning("scheduler: tasks no terminaron en 2s, continuando")
-        self._tasks.clear()
+        if self._task:
+            self._task.cancel()
+            try:
+                await asyncio.wait_for(
+                    asyncio.gather(self._task, return_exceptions=True),
+                    timeout=2.0,
+                )
+            except asyncio.TimeoutError:
+                log.warning("scheduler: task no terminó en 2s, continuando")
+        self._task = None
         self.pipeline.stop()
         log.info("scheduler: detenido")
 
-    async def _metric_loop(self) -> None:
-        while not self._stop.is_set():
-            try:
-                r = self.pipeline.count()
-                payload = {
-                    "people": r.people,
-                    "queue_status": r.queue_status,
-                    "fps": round(r.fps, 1),
-                    "model_version": "yolov8n" if r.model_loaded else "unloaded",
-                    "infer_ms": round(r.last_infer_ms, 1),
-                    "polygons_used": r.polygons_used,
-                    "ts": datetime.now(timezone.utc).isoformat(),
-                }
-                await self.client.send_metric(payload)
-            except Exception as e:
-                log.warning("metric tick falló: %s", e)
-            await asyncio.sleep(METRIC_INTERVAL_S)
+    async def _send_metric_safe(self) -> None:
+        try:
+            r = self.pipeline.count()
+            payload = {
+                "people": r.people,
+                "queue_status": r.queue_status,
+                "fps": round(r.fps, 1),
+                "model_version": "yolov8n" if r.model_loaded else "unloaded",
+                "infer_ms": round(r.last_infer_ms, 1),
+                "polygons_used": r.polygons_used,
+                "ts": datetime.now(timezone.utc).isoformat(),
+            }
+            await self.client.send_metric(payload)
+        except Exception as e:
+            log.warning("metric falló: %s", e)
 
-    async def _heartbeat_loop(self) -> None:
-        while not self._stop.is_set():
-            try:
-                await self.client.send_heartbeat({
-                    "ts": datetime.now(timezone.utc).isoformat(),
-                    "version": "0.1.0",
-                })
-            except Exception as e:
-                log.warning("heartbeat tick falló: %s", e)
-            await asyncio.sleep(HEARTBEAT_INTERVAL_S)
+    async def _send_heartbeat_safe(self) -> None:
+        try:
+            await self.client.send_heartbeat({
+                "ts": datetime.now(timezone.utc).isoformat(),
+                "version": "0.1.0",
+            })
+        except Exception as e:
+            log.warning("heartbeat falló: %s", e)
 
-    async def _commands_loop(self) -> None:
+    async def _poll_commands_safe(self) -> None:
+        try:
+            await self.client.poll_commands(wait_seconds=self._interval)
+        except Exception as e:
+            log.warning("commands falló: %s", e)
+
+    async def _loop(self) -> None:
         while not self._stop.is_set():
-            try:
-                await self.client.poll_commands(wait_seconds=COMMANDS_INTERVAL_S)
-            except Exception as e:
-                log.warning("commands tick falló: %s", e)
-            await asyncio.sleep(1)
+            t0 = time.monotonic()
+            await asyncio.gather(
+                self._send_metric_safe(),
+                self._send_heartbeat_safe(),
+                self._poll_commands_safe(),
+            )
+            elapsed = time.monotonic() - t0
+            remaining = max(0.0, self._interval - elapsed)
+            if remaining > 0:
+                try:
+                    await asyncio.wait_for(self._stop.wait(), timeout=remaining)
+                except asyncio.TimeoutError:
+                    pass

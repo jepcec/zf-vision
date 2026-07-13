@@ -38,7 +38,7 @@ def test_mock_send_heartbeat_and_metric_are_noop() -> None:
         try:
             await c.send_heartbeat({"ts": "now"})
             await c.send_metric({"people": 5, "queue_status": "LOW"})
-            assert await c.poll_commands() == []
+            assert await c.poll_commands(wait_seconds=0) == []
         finally:
             await c.aclose()
 

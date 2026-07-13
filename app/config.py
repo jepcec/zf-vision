@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     HOST: str = "127.0.0.1"
     PORT: int = 8765
     LOG_LEVEL: str = "INFO"
+    PUSH_INTERVAL_S: int = 5
 
 
 def get_settings() -> Settings:

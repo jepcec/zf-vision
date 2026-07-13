@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import secrets
@@ -137,6 +138,8 @@ class BackendClient:
         t0 = time.monotonic()
         if self.mock:
             self._end(eid, None, 0, "MOCK")
+            if wait_seconds > 0:
+                await asyncio.sleep(wait_seconds)
             return []
         try:
             r = await self._client.get(

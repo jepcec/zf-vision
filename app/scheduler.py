@@ -10,9 +10,9 @@ from app.vision.pipeline import QueuePipeline
 
 log = logging.getLogger(__name__)
 
-METRIC_INTERVAL_S = 5
-HEARTBEAT_INTERVAL_S = 30
-COMMANDS_INTERVAL_S = 60
+METRIC_INTERVAL_S = 30
+HEARTBEAT_INTERVAL_S = 60
+COMMANDS_INTERVAL_S = 120
 
 
 class PushScheduler:
